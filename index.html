@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eva's Cafe & Bar | Seattle</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        /* 
+         * DESIGN SYSTEM & PALETTE 
+         * Derived from Eva's Cafe brand assets (style.png, interior photos)
+         * Color A (Dominant Text/Logo): Charcoal #1c1f1d
+         * Color B (Background/Accent): Sage Green #92a490
+         * Neutral: Cream #f4f3ef
+         * 
+         * INTRO ANIMATION NOTE:
+         * The logo provided in the menus is a black script on a light background. 
+         * Therefore, the geometric center of the logo strokes is the Charcoal color.
+         * The intro animation will transition the background to this Charcoal color 
+         * as the logo scales up, matching the prompt requirements.
+         */
+        :root {
+            --color-charcoal: #1c1f1d;
+            --color-sage: #92a490;
+            --color-cream: #f4f3ef;
+            --color-white: #ffffff;
+            --color-gold: #cba052;
+            
+            --font-heading: 'Playfair Display', serif;
+            --font-body: 'Inter', sans-serif;
+            --font-script: 'Great Vibes', cursive;
+            
+            --transition-smooth: 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            --transition-slow: 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--color-cream);
+            color: var(--color-charcoal);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Custom Cursor (Desktop Only) */
+        @media (min-width: 1024px) {
+            body { cursor: none; }
+            a, button, input, textarea, select, .interactive { cursor: none; }
+        }
+        
+        #custom-cursor {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 20px;
+            height: 20px;
+            background-color: var(--color-white);
+            border-radius: 50%;
+            pointer-events: none;
+            mix-blend-mode: difference;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: width 0.2s, height 0.2s, background-color 0.2s;
+            display: none;
+        }
+
+        @media (min-width: 1024px) {
+            #custom-cursor { display: block; }
+        }
+
+        #custom-cursor.hovered {
+            width: 50px;
+            height: 50px;
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Scroll Progress Bar */
+        #scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background-color: var(--color-gold);
+            width: 0%;
+            z-index: 10000;
+            transition: width 0.1s linear;
+        }
+
+        /* Scroll Reveal Utility Classes */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity var(--transition-slow), transform var(--transition-slow);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        h1, h2, h3, h4 {
+            font-family: var(--font-heading);
+            font-weight: 400;
+            line-height: 1.2;
+        }
+
+        .script-text {
+            font-family: var(--font-script);
+            font-size: 3rem;
+            color: var(--color-charcoal);
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem 2rem;
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border: 1px solid var(--color-charcoal);
+            background: transparent;
+            color: var(--color-charcoal);
+            cursor: pointer;
+            transition: all var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+            border-radius: 4px;
+        }
+
+        .btn:hover {
+            background: var(--color-charcoal);
+            color: var(--color-white);
+            transform: scale(1.02);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .btn-light {
+            border-color: var(--color-white);
+            color: var(--color-white);
+        }
+        
+        .btn-light:hover {
+            background: var(--color-white);
+            color: var(--color-charcoal);
+        }
+
+        #intro-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: var(--color-cream);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 1.5s ease-in-out, opacity 0.6s ease-in-out;
+        }
+
+        #intro-overlay.zooming {
+            background-color: var(--color-charcoal); /* Transition to center color */
+        }
+
+        #intro-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .intro-logo {
+            font-family: var(--font-script);
+            font-size: 6rem;
+            color: var(--color-charcoal);
+            transition: transform 2s cubic-bezier(0.85, 0, 0.15, 1);
+            transform-origin: center center;
+            margin: 0;
+            padding: 0;
+            line-height: 1;
+        }
+
+        /* IMPORTANT: Header is a sibling to page-content */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1.5rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            transition: background-color var(--transition-smooth), padding var(--transition-smooth);
+            /* Initial state for Dark Hero */
+            background-color: transparent;
+            color: var(--color-white);
+        }
+
+        header.scrolled {
+            background-color: var(--color-white);
+            color: var(--color-charcoal);
+            padding: 1rem 5%;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .logo-container {
+            font-family: var(--font-script);
+            font-size: 2.5rem;
+            line-height: 1;
+            /* Ensure minimum size */
+            min-height: 56px;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-links {
+            display: none;
+            gap: 2.5rem;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        @media (min-width: 768px) {
+            .nav-links { display: flex; }
+        }
+
+        .nav-links a {
+            position: relative;
+            padding-bottom: 4px;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background-color: currentColor;
+            transition: width var(--transition-smooth);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .hamburger {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        @media (min-width: 768px) {
+            .hamburger { display: none; }
+        }
+
+        .hamburger span {
+            display: block;
+            width: 25px;
+            height: 2px;
+            background-color: currentColor;
+            transition: all 0.3s ease;
+        }
+
+        /* Mobile specific alignment: Logo center top, hamburger right */
+        @media (max-width: 767px) {
+            header {
+                justify-content: center;
+                position: relative; /* Adjusting for center layout */
+            }
+            header {
+                position: fixed;
+                justify-content: center;
+            }
+            .hamburger {
+                position: absolute;
+                right: 5%;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+        }
+
+        #page-content {
+            /* Transform allowed here, header is safely outside */
+            width: 100%;
+        }
+
+        .hero {
+            position: relative;
+            height: 100vh;
+            width: 100%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--color-charcoal);
+        }
+
+        .hero-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('images/image1 (1).jpeg');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.6; /* Dark overlay for text legibility */
+            z-index: 1;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            color: var(--color-white);
+            max-width: 800px;
+            padding: 0 2rem;
+            /* Animation applied to child, not the flex container */
+            animation: slideUpFade 1.2s ease-out forwards;
+            animation-delay: 2s; /* Wait for intro */
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        @keyframes slideUpFade {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-subtitle {
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        .hero h1 {
+            font-size: clamp(3rem, 6vw, 5.5rem);
+            margin-bottom: 1rem;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+            color: var(--color-white);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0.7;
+        }
+
+        .scroll-line {
+            width: 1px;
+            height: 40px;
+            background: linear-gradient(to bottom, var(--color-white) 50%, transparent 50%);
+            background-size: 100% 200%;
+            animation: scrollPulse 2s infinite linear;
+        }
+
+        @keyframes scrollPulse {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100%; }
+        }
+
+        .section {
+            padding: 8rem 5%;
+        }
+
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 4rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            align-items: center;
+        }
+
+        @media (min-width: 768px) {
+            .about-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        .about-image {
+            position: relative;
+            width: 100%;
+            padding-bottom: 120%; /* Portrait aspect ratio */
+            overflow: hidden;
+            border-radius: 4px;
+        }
+
+        .about-image img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .about-text h2 {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            color: var(--color-charcoal);
+        }
+
+        .about-text p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #555;
+            margin-bottom: 2rem;
+        }
+
+        .tag-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+
+        .tag {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0.4rem 0.8rem;
+            background-color: var(--color-sage);
+            color: var(--color-white);
+            border-radius: 50px;
+        }
+
+        .menu-section {
+            background-color: var(--color-white);
+            position: relative;
+        }
+
+        .menu-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .section-header {
+            margin-bottom: 5rem;
+        }
+        
+        .section-header h2 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 4rem;
+            text-align: left;
+        }
+
+        @media (min-width: 768px) {
+            .menu-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        .menu-category h3 {
+            font-family: var(--font-script);
+            font-size: 3.5rem;
+            color: var(--color-charcoal);
+            margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            padding-bottom: 1rem;
+            text-align: center;
+        }
+
+        .menu-item {
+            margin-bottom: 1.5rem;
+        }
+
+        .menu-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 0.25rem;
+        }
+
+        .item-title {
+            font-family: var(--font-body);
+            font-weight: 600;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .item-price {
+            font-weight: 600;
+            color: var(--color-charcoal);
+        }
+
+        .item-desc {
+            font-size: 0.9rem;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .best-seller {
+            font-size: 0.65rem;
+            background: var(--color-gold);
+            color: var(--color-white);
+            padding: 2px 6px;
+            border-radius: 2px;
+            vertical-align: middle;
+            margin-left: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .gallery-section {
+            background-color: var(--color-cream);
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-auto-flow: dense; /* Fill holes in masonry */
+            gap: 15px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .gallery-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 4px;
+            /* Base height for standard square-ish items */
+            min-height: 300px;
+        }
+
+        /* Orientation Classes */
+        .span-row-2 { grid-row: span 2; min-height: 615px; } /* Portrait */
+        .span-col-2 { grid-column: span 2; } /* Landscape */
+        
+        @media (max-width: 767px) {
+            /* Revert to single column on mobile */
+            .gallery-grid { grid-template-columns: 1fr; }
+            .span-col-2 { grid-column: span 1; }
+            .span-row-2 { min-height: 400px; }
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.05);
+        }
+
+        .gallery-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 2rem 1.5rem 1rem;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            color: var(--color-white);
+            font-size: 0.9rem;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .gallery-item:hover .gallery-caption {
+            transform: translateY(0);
+        }
+
+        .reviews-section {
+            background-color: var(--color-sage);
+            color: var(--color-white);
+            text-align: center;
+            padding: 10rem 5%;
+        }
+
+        .quote-icon {
+            font-family: var(--font-script);
+            font-size: 6rem;
+            line-height: 0;
+            opacity: 0.4;
+            margin-bottom: 2rem;
+        }
+
+        .review-text {
+            font-family: var(--font-heading);
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            font-style: italic;
+            max-width: 900px;
+            margin: 0 auto 2rem;
+            line-height: 1.4;
+        }
+
+        .review-author {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 500;
+        }
+
+        .location-section {
+            background-color: var(--color-charcoal);
+            color: var(--color-white);
+            padding: 0; /* Full bleed map */
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (min-width: 1024px) {
+            .location-section {
+                flex-direction: row;
+                height: 70vh;
+            }
+        }
+
+        .location-info {
+            padding: 6rem 5%;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .location-info h2 {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-block {
+            margin-bottom: 2rem;
+        }
+
+        .info-block h4 {
+            font-family: var(--font-body);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--color-sage);
+            margin-bottom: 0.5rem;
+        }
+        
+        .info-block p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .map-container {
+            flex: 1;
+            min-height: 400px;
+            filter: grayscale(100%) invert(90%) hue-rotate(180deg) contrast(0.8);
+            transition: filter 0.3s ease;
+        }
+        
+        .map-container:hover {
+            filter: none;
+        }
+
+        .map-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        footer {
+            background-color: var(--color-white);
+            padding: 4rem 5% 2rem;
+            text-align: center;
+        }
+
+        .footer-logo {
+            font-family: var(--font-script);
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            display: inline-block;
+            min-height: 60px;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-links a {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(0,0,0,0.1);
+            padding-top: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        @media (min-width: 768px) {
+            .footer-bottom {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+        }
+
+        .preview-badge {
+            font-family: monospace;
+            background: #f0f0f0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            letter-spacing: 0;
+        }
+
+        /* Organic SVG Divider utility */
+        .divider-svg {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            overflow: hidden;
+            line-height: 0;
+        }
+        .divider-svg svg {
+            position: relative;
+            display: block;
+            width: calc(100% + 1.3px);
+            height: 50px;
+        }
+        .divider-svg .shape-fill { fill: var(--color-white); }
+        
+    </style>
+</head>
+<body>
+
+    <div id="intro-overlay">
+        <!-- Using text as requested if image logo is not explicitly available as logo.png, 
+             mimicking the script from the menu perfectly -->
+        <h1 class="intro-logo">eva's</h1>
+    </div>
+
+    <!-- Scroll Progress -->
+    <div id="scroll-progress"></div>
+    
+    <!-- Custom Cursor -->
+    <div id="custom-cursor"></div>
+
+    <header id="main-header">
+        <a href="#" class="logo-container">eva's</a>
+        
+        <nav class="nav-links">
+            <a href="#about">Story</a>
+            <a href="#menu">Menu</a>
+            <a href="#gallery">Vibe</a>
+            <a href="#location">Visit</a>
+        </nav>
+        
+        <div class="hamburger">
+            <span></span>
+            <span></span>
+        </div>
+    </header>
+
+    <main id="page-content">
+        
+        <!-- Hero Section -->
+        <section id="hero" class="hero">
+            <div class="hero-bg"></div>
+            <div class="hero-content">
+                <span class="hero-subtitle">Seattle, WA</span>
+                <h1>You Have Great Taste</h1>
+                <p style="margin-bottom: 2rem; font-size: 1.1rem; letter-spacing: 1px;">COFFEE TO COCKTAILS. BREAKFAST TO DINNER.</p>
+                <a href="#menu" class="btn btn-light interactive">View Menu</a>
+            </div>
+            
+            <div class="scroll-indicator">
+                <span>Scroll</span>
+                <div class="scroll-line"></div>
+            </div>
+        </section>
+
+        <section id="about" class="section">
+            <div class="about-grid">
+                <div class="about-text reveal">
+                    <h2>A Cozy Gem in the City.</h2>
+                    <div class="tag-group">
+                        <span class="tag">Women-Owned</span>
+                        <span class="tag">Dine-in & Takeout</span>
+                    </div>
+                    <p>Welcome to Eva's Cafe & Bar. We believe in serving more than just great food and drinks; we serve experiences. From perfectly brewed morning coffees to expertly crafted evening cocktails, our space is designed for connection.</p>
+                    <p>Our aesthetic is warm, chic, and inviting—the perfect backdrop whether you're grabbing a quick breakfast sandwich or settling in for an evening with friends.</p>
+                    <a href="#location" class="btn interactive">Find Us</a>
+                </div>
+                <div class="about-image reveal" style="transition-delay: 0.2s;">
+                    <!-- Mapping image3 (1).jpg which shows the iced coffees on ribbed table -->
+                    <img src="images/image3 (1).jpg" alt="Iced Coffees at Eva's">
+                </div>
+            </div>
+        </section>
+
+        <section id="menu" class="section menu-section">
+            <div class="divider-svg" style="top: -49px; transform: rotate(180deg);">
+                <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+                    <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path>
+                </svg>
+            </div>
+
+            <div class="menu-container">
+                <div class="section-header reveal">
+                    <h2>Curated Selection</h2>
+                    <p>Served fresh daily in Seattle</p>
+                </div>
+
+                <div class="menu-grid">
+                    <!-- Column 1 -->
+                    <div class="menu-column reveal">
+                        <div class="menu-category">
+                            <h3>coffee</h3>
+                            
+                            <div class="menu-item">
+                                <div class="menu-item-header">
+                                    <span class="item-title">Espresso</span>
+                                    <span class="item-price">4.50</span>
+                                </div>
+                                <div class="item-desc">2oz strictly</div>
+                            </div>
+                            
+                            <div class="menu-item">
+                                <div class="menu-item-header">
+                                    <span class="item-title">Latte <span class="best-seller">Local Fav</span></span>
+                                    <span class="item-price">6.00+</span>
+                                </div>
+                                <div class="item-desc">Available in 8oz, 12oz, 16oz</div>
+                            </div>
+
+                            <div class="menu-item">
+                                <div class="menu-item-header">
+                                    <span class="item-title">Cold Brew</span>
+                                    <span class="item-price">5.75+</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="menu-category" style="margin-top: 3rem;">
+                            <h3>on the run</h3>
+                            
+                            <div class="menu-item">
+                                <div class="menu-item-header">
+                                    <span class="item-title">Brkfst Sndwch* <span class="best-seller">Must Try</span></span>
+                                    <span class="item-price">14</span>
+                                </div>
+                                <div class="item-desc">Croissant bun, fried egg, sriracha aioli, arugula. Add bacon +2</div>
+                            </div>
+
+                            <div class="menu-item">
+                                <div class="menu-item-header">
+                                    <span class="item-title">Spam Musubi</span>
+                                    <span class="item-price">7/13</span>
+                                </div>
+                                <div class="item-desc">Soy-glazed spam, sushi rice, nori, sriracha aioli</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Column 2 -->
+                    <div class="menu-column reveal" style="transition-delay: 0.2s;">
+                        <div class="menu-category">
+                            <h3>plates</h3>
+                            
+                            <div class="menu-item">
+                                <div class="menu-item-header">
+                                    <span class="item-title">Truffle Gnocchi</span>
+                                    <span class="item-price">21</span>
+                                </div>
+                                <div class="item-desc">Potato gnocchi, truffle cream, chimi churi, parmesan</div>
+                            </div>
+                            
+                            <div class="menu-item">
+                                <div class="menu-item-header">
+                                    <span class="item-title">Beef Curry</span>
+                                    <span class="item-price">23</span>
+                                </div>
+                                <div class="item-desc">Curry spice blend, bell pepper, potatoes, sesame seeds</div>
+                            </div>
+                        </div>
+
+                        <div class="menu-category" style="margin-top: 3rem;">
+                            <h3>cocktails</h3>
+                            
+                            <div class="menu-item">
+                                <div class="menu-item-header">
+                                    <span class="item-title">Coffee Old Fashioned</span>
+                                    <span class="item-price">18</span>
+                                </div>
+                                <div class="item-desc">2bar bourbon, coffee simple, coffee bitters</div>
+                            </div>
+
+                            <div class="menu-item">
+                                <div class="menu-item-header">
+                                    <span class="item-title">Not Just an Espresso Martini</span>
+                                    <span class="item-price">18</span>
+                                </div>
+                                <div class="item-desc">Meletti coffee/chocolate/amaro, fresh espresso</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 4rem;">
+                    <a href="#" class="btn interactive">Order Online</a>
+                </div>
+            </div>
+        </section>
+
+        <section id="gallery" class="section gallery-section">
+            <div class="section-header reveal" style="text-align: center; margin-bottom: 3rem;">
+                <h2>The Vibe</h2>
+            </div>
+            
+            <div class="gallery-grid">
+                <!-- Portrait (Bottles) -->
+                <div class="gallery-item span-row-2 reveal interactive">
+                    <img src="images/image5.jpg" alt="Bar Shelves">
+                    <div class="gallery-caption">Curated spirits & tonics</div>
+                </div>
+                
+                <!-- Landscape (Musubi) -->
+                <div class="gallery-item span-col-2 reveal interactive">
+                    <img src="images/image6.jpg" alt="Spam Musubi">
+                    <div class="gallery-caption">Freshly made Spam Musubi</div>
+                </div>
+                
+                <!-- Standard/Square-ish (Pasta) -->
+                <div class="gallery-item reveal interactive">
+                    <img src="images/image2 (1).jpg" alt="Truffle Gnocchi">
+                    <div class="gallery-caption">Truffle Gnocchi</div>
+                </div>
+                
+                <!-- Portrait (Door) -->
+                <div class="gallery-item span-row-2 reveal interactive">
+                    <img src="images/image4 (1).jpg" alt="Eva's Door">
+                    <div class="gallery-caption">Coffee to Cocktails</div>
+                </div>
+                
+                <!-- Portrait (Interior Lights) -->
+                <div class="gallery-item span-row-2 reveal interactive">
+                    <img src="images/image1 (1).jpg" alt="Warm Interior Lighting">
+                    <div class="gallery-caption">Cozy, chic aesthetic</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="reviews" class="reviews-section">
+            <div class="quote-icon">"</div>
+            <div class="reveal">
+                <p class="review-text">"Found this absolute gem today! The coffee was perfectly brewed with the cutest latte art, and the breakfast toast/sandwich was incredibly fresh. The aesthetic inside is so cozy and chic. Definitely my new favorite spot."</p>
+                <p class="review-author">— Diana R. (Local Guide)</p>
+                <div style="margin-top: 1rem; color: var(--color-gold);">★★★★★</div>
+            </div>
+        </section>
+
+        <section id="location" class="location-section">
+            <div class="location-info reveal">
+                <h2>Visit Us</h2>
+                
+                <div class="info-block">
+                    <h4>Location</h4>
+                    <p>2208 4th Ave suite b<br>Seattle, WA 98121</p>
+                </div>
+                
+                <div class="info-block">
+                    <h4>Hours</h4>
+                    <p>Open Daily<br>Closes at 9:00 PM</p>
+                </div>
+                
+                <div class="info-block">
+                    <h4>Contact</h4>
+                    <p>+1 425-495-7547<br>hello@evascafeandbar.com</p>
+                </div>
+            </div>
+            
+            <div class="map-container">
+                <!-- iframe URL format requested: ?q=Name+Address+City&output=embed -->
+                <iframe 
+                    src="https://www.google.com/maps?q=Eva's+Cafe+and+Bar+2208+4th+Ave+suite+b+Seattle+WA&output=embed" 
+                    allowfullscreen="" 
+                    loading="lazy" 
+                    referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <a href="#" class="footer-logo">eva's</a>
+        <div class="footer-links">
+            <a href="https://www.instagram.com/evascafeandbar/" target="_blank" class="interactive">Instagram</a>
+            <a href="#" class="interactive">Order Now</a>
+            <a href="#location" class="interactive">Directions</a>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Eva's Cafe & Bar. All rights reserved.</p>
+            <span class="preview-badge">PREVIEW · @higorcaco</span>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- 1. Intro Animation Logic ---
+            const overlay = document.getElementById('intro-overlay');
+            const logo = document.querySelector('.intro-logo');
+            
+            // Check session storage to run only once per session
+            if (!sessionStorage.getItem('introPlayed')) {
+                // Lock scroll during animation
+                document.body.style.overflow = 'hidden';
+                
+                setTimeout(() => {
+                    // Start Zoom & Background Color Transition
+                    // The CSS transitions the bg to var(--color-charcoal) which represents the center of the text logo
+                    logo.style.transform = 'scale(50)';
+                    overlay.classList.add('zooming');
+                    
+                    setTimeout(() => {
+                        // Fade out overlay
+                        overlay.classList.add('hidden');
+                        document.body.style.overflow = ''; // Unlock scroll
+                        sessionStorage.setItem('introPlayed', 'true');
+                        
+                        // Remove from DOM after fade completes
+                        setTimeout(() => overlay.remove(), 600);
+                    }, 1200); // Wait for zoom to cover screen
+                }, 500); // Initial delay
+            } else {
+                overlay.remove(); // Skip animation if already played
+            }
+
+            // --- 2. Header Scroll Contrast Logic ---
+            const header = document.getElementById('main-header');
+            const heroSection = document.getElementById('hero');
+            
+            window.addEventListener('scroll', () => {
+                const scrollPos = window.scrollY;
+                const heroHeight = heroSection ? heroSection.offsetHeight - 100 : 500;
+                
+                if (scrollPos > heroHeight) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+
+                // --- 3. Scroll Progress Bar ---
+                const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+                const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                const scrolled = (winScroll / height) * 100;
+                document.getElementById('scroll-progress').style.width = scrolled + '%';
+            });
+
+            // --- 4. Custom Cursor Logic ---
+            const cursor = document.getElementById('custom-cursor');
+            const interactives = document.querySelectorAll('a, button, .interactive');
+            
+            if (window.matchMedia("(min-width: 1024px)").matches) {
+                document.addEventListener('mousemove', (e) => {
+                    // Simple Lerp or direct follow
+                    cursor.style.left = e.clientX + 'px';
+                    cursor.style.top = e.clientY + 'px';
+                });
+                
+                interactives.forEach(el => {
+                    el.addEventListener('mouseenter', () => cursor.classList.add('hovered'));
+                    el.addEventListener('mouseleave', () => cursor.classList.remove('hovered'));
+                });
+            }
+
+            // --- 5. Scroll Reveal with IntersectionObserver ---
+            const revealElements = document.querySelectorAll('.reveal');
+            
+            const revealOptions = {
+                threshold: 0.15,
+                rootMargin: "0px 0px -50px 0px"
+            };
+            
+            const revealOnScroll = new IntersectionObserver(function(entries, observer) {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting) {
+                        return;
+                    } else {
+                        entry.target.classList.add('active');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, revealOptions);
+            
+            revealElements.forEach(el => {
+                revealOnScroll.observe(el);
+            });
+            
+            // --- 6. Mobile Menu Toggle ---
+            const hamburger = document.querySelector('.hamburger');
+            // Simplified for mockup: just alert or basic toggle. 
+            // Since we need to keep code clean and no external libs, 
+            // clicking it could just scroll to menu section in this one-page layout.
+            if(hamburger) {
+                hamburger.addEventListener('click', () => {
+                    const menuLink = document.querySelector('a[href="#menu"]');
+                    if(menuLink) menuLink.click();
+                });
+            }
+        });
+    </script>
+</body>
+</html>
